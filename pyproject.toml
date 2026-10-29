@@ -1,0 +1,4 @@
+[tool.pytest.ini_options]
+# Make `import sas` work for the `pytest` command too, not only `python -m pytest`.
+pythonpath = ["."]
+testpaths = ["tests"]
