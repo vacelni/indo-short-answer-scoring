@@ -9,7 +9,7 @@
     },
     "official_test": {
       "qwk": 0.0,
-      "pearson": NaN,
+      "pearson": 0.0,
       "rmse": 1.7378940440821633,
       "accuracy": 0.15543695797198132,
       "within_one": 0.542361574382922
