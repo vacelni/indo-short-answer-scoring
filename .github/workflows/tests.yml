@@ -1,0 +1,21 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      # The tests fake the embedding model, so they need neither torch nor a model download.
+      - run: pip install "fastapi>=0.115" "pandas>=2.2" "numpy>=2.0" "scipy>=1.13" "scikit-learn>=1.5,<1.8" "joblib>=1.4" pytest httpx
+      - run: pytest -q

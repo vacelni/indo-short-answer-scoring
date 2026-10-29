@@ -1,0 +1,50 @@
+{
+  "Mean score (floor)": {
+    "cv_unseen_questions": {
+      "qwk": 0.0,
+      "pearson": -0.19317209216619696,
+      "rmse": 1.9824839216398638,
+      "accuracy": 0.11926855895196506,
+      "within_one": 0.3406113537117904
+    },
+    "official_test": {
+      "qwk": 0.0,
+      "pearson": NaN,
+      "rmse": 1.7378940440821633,
+      "accuracy": 0.15543695797198132,
+      "within_one": 0.542361574382922
+    }
+  },
+  "Lexical overlap + gradient boosting": {
+    "cv_unseen_questions": {
+      "qwk": 0.3479922314469014,
+      "pearson": 0.37710973381398133,
+      "rmse": 1.9445506166009956,
+      "accuracy": 0.24194868995633187,
+      "within_one": 0.5732805676855895
+    },
+    "official_test": {
+      "qwk": 0.5725696865374994,
+      "pearson": 0.6056708657426874,
+      "rmse": 1.4156288005902855,
+      "accuracy": 0.3115410273515677,
+      "within_one": 0.6937958639092728
+    }
+  },
+  "Lexical + multilingual embedding similarity": {
+    "cv_unseen_questions": {
+      "qwk": 0.37034608927624324,
+      "pearson": 0.3930337238552821,
+      "rmse": 1.927748508605222,
+      "accuracy": 0.25887008733624456,
+      "within_one": 0.5771015283842795
+    },
+    "official_test": {
+      "qwk": 0.5650240167006153,
+      "pearson": 0.5967052248194846,
+      "rmse": 1.44072778319919,
+      "accuracy": 0.3408939292861908,
+      "within_one": 0.6957971981320881
+    }
+  }
+}

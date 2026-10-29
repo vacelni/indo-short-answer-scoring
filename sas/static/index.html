@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Penilai Jawaban Singkat</title>
+  <style>
+    :root { --ink: #1d2433; --muted: #5d6676; --line: #d5dbe3; --paper: #fff; --bg: #f1f4f7; --accent: #1f5f8b; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 system-ui, sans-serif; }
+    main { max-width: 52rem; margin: 0 auto; padding: 2rem 1rem 4rem; }
+    h1 { font-size: 1.6rem; margin: 0 0 .25rem; }
+    p.lead { color: var(--muted); margin: 0 0 1.5rem; max-width: 40rem; }
+    label { display: block; font-weight: 600; margin: 1.25rem 0 .35rem; }
+    .hint { font-weight: 400; color: var(--muted); font-size: .9rem; }
+    textarea { width: 100%; font: inherit; padding: .7rem .8rem; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); }
+    button { margin-top: 1rem; font: inherit; font-weight: 600; padding: .65rem 1.2rem; border: 0; border-radius: 6px; background: var(--accent); color: #fff; cursor: pointer; }
+    button:disabled { opacity: .6; cursor: wait; }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    #error { color: #a3261b; margin-top: 1rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: 2rem; background: var(--paper); }
+    th, td { text-align: left; padding: .6rem .7rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { font-size: .85rem; color: var(--muted); font-weight: 600; }
+    td.grade { font-size: 1.4rem; font-weight: 700; width: 4rem; }
+    td.why { color: var(--muted); font-size: .85rem; width: 15rem; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Penilai jawaban singkat</h1>
+  <p class="lead">Tulis kunci jawaban, tempel jawaban siswa (satu per baris), lalu nilai semuanya sekaligus dengan skala 0–5. Hasilnya saran untuk guru, bukan nilai akhir.</p>
+
+  <form id="form">
+    <label for="reference">Kunci jawaban</label>
+    <textarea id="reference" rows="3" required>Ekosistem adalah hubungan timbal balik antara makhluk hidup dengan lingkungannya.</textarea>
+
+    <label for="answers">Jawaban siswa <span class="hint">(satu jawaban per baris, maksimal 200)</span></label>
+    <textarea id="answers" rows="6" required>Ekosistem adalah interaksi antara makhluk hidup dan lingkungan sekitarnya
+kumpulan hewan di hutan
+tidak tahu</textarea>
+
+    <button type="submit" id="submit">Nilai jawaban</button>
+  </form>
+  <p id="error" role="alert" hidden></p>
+
+  <table id="results" hidden>
+    <thead><tr><th>Nilai</th><th>Jawaban</th><th>Alasan</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</main>
+<script>
+  const form = document.getElementById('form');
+  const button = document.getElementById('submit');
+  const error = document.getElementById('error');
+  const table = document.getElementById('results');
+
+  const cell = (text, className) => {
+    const td = document.createElement('td');
+    td.textContent = text;
+    if (className) td.className = className;
+    return td;
+  };
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const answers = document.getElementById('answers').value.split('\n').map((a) => a.trim()).filter(Boolean);
+    error.hidden = true;
+    button.disabled = true;
+    button.textContent = 'Menilai…';
+    try {
+      const response = await fetch('/score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reference: document.getElementById('reference').value, answers }),
+      });
+      if (!response.ok) throw new Error((await response.json()).detail ?? 'Penilaian gagal.');
+      const { results } = await response.json();
+      const body = table.querySelector('tbody');
+      body.replaceChildren(...results.map((r) => {
+        const tr = document.createElement('tr');
+        const e = r.evidence;
+        const why = e.blank_or_unsure
+          ? 'Jawaban kosong atau tidak yakin.'
+          : `Kata kunci tercakup ${Math.round(e.reference_recall * 100)}%, kemiripan makna ${Math.round(e.embedding_cosine * 100)}%.`;
+        tr.append(cell(r.grade, 'grade'), cell(r.answer), cell(why, 'why'));
+        return tr;
+      }));
+      table.hidden = false;
+    } catch (e) {
+      error.textContent = typeof e.message === 'string' ? e.message : 'Penilaian gagal. Periksa isian lalu coba lagi.';
+      error.hidden = false;
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Nilai jawaban';
+    }
+  });
+</script>
+</body>
+</html>
