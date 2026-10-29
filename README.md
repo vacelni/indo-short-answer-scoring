@@ -15,11 +15,18 @@ The dataset's official test set has **6 questions that never appear in training*
 |---|---|---|---|---|---|
 | Always predict the average (floor) | 0.000 | 0.000 | 15.5% | 54.2% | 0.000 |
 | Lexical overlap + gradient boosting | **0.573** | **0.606** | 31.2% | 69.4% | 0.348 |
-| + multilingual sentence-embedding similarity | 0.565 | 0.597 | **34.1%** | **69.6%** | **0.370** |
+| + multilingual sentence-embedding similarity | 0.565 | 0.597 | 34.1% | 69.6% | **0.370** |
+| IndoBERT cross-encoder, fine-tuned | 0.509 | 0.595 | **40.9%** | **74.2%** | — |
+
+The IndoBERT row has no cross-validation column: fine-tuning five times on a laptop GPU was not worth it. It picked its epoch on 5 held-out training questions (validation QWK 0.594) and saw the test set once. Its configuration is in `results/metrics.json`, and the training log is in `results/crossencoder.log`.
 
 QWK (quadratic weighted kappa) is the standard agreement measure for automated scoring. It rewards being close, not only being exact. The numbers come from `results/metrics.json`, and running `python -m sas.evaluate` again reproduces them exactly.
 
-**How to read this honestly.** On questions the model has never seen, it agrees with human graders moderately: about a third of answers get exactly the same grade and seven in ten are within one point. That is useful for sorting a pile of answers or flagging ones to read first. It is not good enough to replace the teacher, and the tool says so.
+**How to read this honestly.** On questions the models have never seen, they agree with human graders only moderately. No model wins on every measure:
+
+- the fine-tuned IndoBERT gives the exact grade most often (41%) and is within one point for three answers in four;
+- the cheaper feature models rank answers more consistently (higher QWK);
+- the feature models run on a CPU in milliseconds, so the API serves the embedding model. That is useful for sorting a pile of answers or flagging ones to read first. It is not good enough to replace the teacher, and the tool says so.
 
 ## What I changed from my first version
 
@@ -42,7 +49,7 @@ Each answer is compared with the reference using features that need no training 
 
 Gradient-boosted trees turn the features into a 0–5 score. The API returns the score together with this evidence.
 
-`sas/crossencoder.py` fine-tunes **IndoBERT** (`indobenchmark/indobert-base-p1`) as a cross-encoder that reads the question, reference and answer together. Model selection uses held-out *questions*. It needs a CUDA GPU and is not in the table yet.
+`sas/crossencoder.py` fine-tunes **IndoBERT** (`indobenchmark/indobert-base-p1`) as a cross-encoder that reads the question, reference and answer together. Model selection uses held-out *questions*. It needs a CUDA GPU; on an RTX 3050 laptop GPU it trains in about half an hour.
 
 ## Try it
 
